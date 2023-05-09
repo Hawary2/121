@@ -1,14 +1,12 @@
-﻿// * Created by AccServer
-// * Copyright © 2020-2021
-// * AccServer - Project
-
-using System;
-using System.IO;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
-namespace AccServer.Database
+namespace GameServer.Database
 {
-    public unsafe class AccountTable
+    public class AccountTable
     {
         public enum AccountState : byte
         {
@@ -18,110 +16,28 @@ namespace AccServer.Database
             GameMaster = 3,
             Player = 2,
             Banned = 1,
+            Cheat = 80,
             DoesntExist = 0
         }
-        public string Username;
-        public string Password;
-        public string IP;
-        public AccountState State;
-        public uint EntityID;
-        public bool exists = false;
-        public bool Banned;
-
-        public AccountTable(string username)
+        public class AccountRegister
         {
-            if (username == null) return;
-            Username = username;
-            Password = "";
-            IP = "";
-            State = AccountState.DoesntExist;
-            EntityID = 0;
-            using (var cmd = new MySqlCommand(MySqlCommandType.SELECT).Select("accounts").Where("Username", username))
-            using (var reader = new MySqlReader(cmd))
+            public string Username = "";
+            public string Password = "";
+            public string Email = "";
+            public AccountRegister()
             {
-                if (reader.Read())
-                {
-                    exists = true;
-                    Password = reader.ReadString("Password");
-                    IP = reader.ReadString("IP");
-                    EntityID = reader.ReadUInt32("ID");
-                    State = (AccountState)reader.ReadInt32("State");
-                    if (State == AccountState.Banned)
-                    {
-                        Banned = true;
-                    }
-                }
+                Username = Password = Email = "";
             }
         }
-        public static void UpdateEarth(string Account, string str)
+        public class ChangePassword
         {
-            using (MySqlCommand command = new MySqlCommand(MySqlCommandType.SELECT).Select("accounts").Where("Username", Account))
+            public string Username = "";
+            public string Password = "";
+            public string Email = "";
+            public ChangePassword()
             {
-                using (MySqlReader reader = new MySqlReader(command))
-                {
-                    if (reader.Read())
-                    {
-                        using (MySqlCommand command2 = new MySqlCommand(MySqlCommandType.UPDATE))
-                        {
-                            command2.Update("accounts").Set("EarthID", str).Where("Username", Account).Execute();
-                        }
-                    }
-                }
+                Username = Password = "";
             }
-        }
-        public static void UpdateIP(string Account, string str)
-        {
-            using (MySqlCommand command = new MySqlCommand(MySqlCommandType.SELECT).Select("accounts").Where("Username", Account))
-            {
-                using (MySqlReader reader = new MySqlReader(command))
-                {
-                    if (reader.Read())
-                    {
-                        using (MySqlCommand command2 = new MySqlCommand(MySqlCommandType.UPDATE))
-                        {
-                            command2.Update("accounts").Set("IP", str).Where("Username", Account).Execute();
-                        }
-                    }
-                }
-            }
-        }
-        public static void Banned12(string Account,bool unbanned = false)
-        {
-            using (MySqlCommand command = new MySqlCommand(MySqlCommandType.SELECT).Select("accounts").Where("Username", Account))
-            {
-                using (MySqlReader reader = new MySqlReader(command))
-                {
-                    if (reader.Read())
-                    {
-                        if (unbanned)
-                        {
-                            using (MySqlCommand command2 = new MySqlCommand(MySqlCommandType.UPDATE))
-                            {
-                                command2.Update("accounts").Set("State", 0).Where("Username", Account).Execute();
-                            }
-                        }
-                        else
-                        {
-                            using (MySqlCommand command2 = new MySqlCommand(MySqlCommandType.UPDATE))
-                            {
-                                command2.Update("accounts").Set("State", 1).Where("Username", Account).Execute();
-                            }
-                        }
-                        Console.WriteLine("Done");
-                    }
-                    else
-                    {
-                        Console.WriteLine("This Account DoesntExist");
-                        
-                    }
-                }
-            }
-        }
-        public void Save()
-        {
-            using (var cmd = new MySqlCommand(MySqlCommandType.UPDATE))
-                cmd.Update("accounts").Set("ID", EntityID)
-                    .Where("Username", Username).Execute();
         }
     }
 }
